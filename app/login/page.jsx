@@ -1,9 +1,16 @@
 "use client";
 import { useMsal } from "@azure/msal-react";
+import { useEffect } from "react";
 import { loginRequest } from "@/lib/authConfig";
 
 export default function LoginPage() {
-  const { instance } = useMsal();
+  const { instance, accounts } = useMsal();
+
+  useEffect(() => {
+    if (accounts.length > 0) {
+      window.location.href = "/";
+    }
+  }, [accounts]);
 
   const handleLogin = () => {
     instance.loginRedirect(loginRequest);
@@ -24,10 +31,8 @@ export default function LoginPage() {
         background: "#0284C7", border: "none", borderRadius: 6,
         color: "#fff", padding: "12px 28px", fontWeight: 700,
         fontSize: 14, cursor: "pointer", fontFamily: "monospace",
-        letterSpacing: 1, display: "flex", alignItems: "center", gap: 10
+        letterSpacing: 1
       }}>
-        <img src="https://learn.microsoft.com/en-us/azure/active-directory/develop/media/howto-add-branding-in-apps/ms-symbollockup_mssymbol_19.png"
-          width={18} height={18} alt="Microsoft" />
         Sign in with Microsoft
       </button>
       <div style={{ color: "#64748B", fontSize: 11, fontFamily: "monospace" }}>

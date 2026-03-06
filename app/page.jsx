@@ -1,5 +1,4 @@
-"use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from "recharts";
 
 // ── Color System ─────────────────────────────────────────────────────────────
@@ -27,7 +26,7 @@ const ORDER_STATUS_COLOR = {
 const mono = { fontFamily:"'JetBrains Mono','Fira Code','Courier New',monospace" };
 
 // ── Seed Data ─────────────────────────────────────────────────────────────────
-const AGENTS = [
+const AGENTS_SEED = [
   { id:"a1", name:"Jordan Davis",   sales:18, revenue:142000, installs:15 },
   { id:"a2", name:"Priya Nair",     sales:24, revenue:198000, installs:22 },
   { id:"a3", name:"Marcus Bell",    sales:11, revenue:87000,  installs:10 },
@@ -182,6 +181,42 @@ const MetricCard = ({ label, value, sub, color, icon }) => (
 export default function RaimakCRM() {
   useGoogleFonts();
   const [accounts, setAccounts] = useState(initAccounts);
+  const [loading, setLoading]   = useState(false);
+  const [spError, setSpError]   = useState(null);
+
+  // ── Load real data from SharePoint ──────────────────────────────────────
+  const loadFromSharePoint = useCallback(async () => {
+    try {
+      setLoading(true);
+      const { getAccounts, getAgents } = await import("@/lib/graph");
+      const [spAccounts] = await Promise.all([getAccounts()]);
+      if (spAccounts && spAccounts.length > 0) {
+        // Merge SharePoint accounts with empty contracts/orders/timeline
+        const merged = spAccounts.map(a => ({
+          ...a,
+          contracts: [],
+          orders:    [],
+          timeline:  [],
+        }));
+        setAccounts(merged);
+      }
+    } catch (err) {
+      // SharePoint not configured yet — fall back to sample data silently
+      setSpError(err.message);
+      console.warn("SharePoint not connected, using sample data:", err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    // Only attempt SharePoint load if env vars are set
+    if (process.env.NEXT_PUBLIC_SP_SITE_ID) {
+      loadFromSharePoint();
+    }
+  }, [loadFromSharePoint]);
+
+  const [accounts_placeholder] = useState(null); // unused, kept for linting
   const [view, setView]   = useState("accounts");
   const [sel,  setSel]    = useState(null);
   const [tab,  setTab]    = useState("Summary");
@@ -266,6 +301,16 @@ export default function RaimakCRM() {
 
   return (
     <div style={{ fontFamily:"'Inter','Segoe UI',sans-serif", background:C.bg, color:C.text, display:"flex", height:"100vh", overflow:"hidden", fontSize:13 }}>
+      {loading && (
+        <div style={{ position:"fixed", top:0, left:0, right:0, zIndex:9999, background:C.cyan, color:"#fff", textAlign:"center", padding:"6px 0", fontSize:11, fontFamily:"monospace", letterSpacing:1 }}>
+          // LOADING FROM SHAREPOINT...
+        </div>
+      )}
+      {spError && process.env.NODE_ENV === "development" && (
+        <div style={{ position:"fixed", bottom:0, left:0, right:0, zIndex:9999, background:"#DC2626", color:"#fff", textAlign:"center", padding:"6px 0", fontSize:10, fontFamily:"monospace" }}>
+          SharePoint: {spError} — showing sample data
+        </div>
+      )}
 
       {/* SIDEBAR */}
       <div style={{ width:210, background:C.sidebar, borderRight:`1px solid #1A3A6B`, display:"flex", flexDirection:"column", flexShrink:0 }}>
@@ -441,15 +486,15 @@ export default function RaimakCRM() {
             {reportTab==="sales" && (
               <div>
                 <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:12, marginBottom:20 }}>
-                  <MetricCard label="Total Sales" value={AGENTS.reduce((s,a)=>s+a.sales,0)} sub="All agents combined" color={C.cyan} icon="🏆"/>
-                  <MetricCard label="Total Revenue" value={"$"+new Intl.NumberFormat("en-US").format(AGENTS.reduce((s,a)=>s+a.revenue,0))} sub="Closed contracts" color={C.green} icon="💰"/>
-                  <MetricCard label="Top Agent" value={AGENTS.sort((a,b)=>b.sales-a.sales)[0].name.split(" ")[0]} sub={`${AGENTS[0].sales} sales this period`} color={C.amber} icon="⭐"/>
+                  <MetricCard label="Total Sales" value={AGENTS_SEED.reduce((s,a)=>s+a.sales,0)} sub="All agents combined" color={C.cyan} icon="🏆"/>
+                  <MetricCard label="Total Revenue" value={"$"+new Intl.NumberFormat("en-US").format(AGENTS_SEED.reduce((s,a)=>s+a.revenue,0))} sub="Closed contracts" color={C.green} icon="💰"/>
+                  <MetricCard label="Top Agent" value={AGENTS_SEED.sort((a,b)=>b.sales-a.sales)[0].name.split(" ")[0]} sub={`${AGENTS[0].sales} sales this period`} color={C.amber} icon="⭐"/>
                 </div>
                 <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16 }}>
                   <Card topColor={C.cyan}>
                     <Label style={{ display:"block", marginBottom:14 }}>Sales by Agent</Label>
                     <ResponsiveContainer width="100%" height={200}>
-                      <BarChart data={AGENTS}>
+                      <BarChart data={AGENTS_SEED}>
                         <XAxis dataKey="name" tick={{ fontSize:10, fill:C.textMuted }} tickFormatter={v=>v.split(" ")[0]}/>
                         <YAxis tick={{ fontSize:10, fill:C.textMuted }}/>
                         <Tooltip contentStyle={{ background:C.card, border:`1px solid ${C.border}`, borderRadius:4, fontSize:11 }}/>
@@ -460,7 +505,7 @@ export default function RaimakCRM() {
                   <Card topColor={C.green}>
                     <Label style={{ display:"block", marginBottom:14 }}>Revenue by Agent</Label>
                     <ResponsiveContainer width="100%" height={200}>
-                      <BarChart data={AGENTS}>
+                      <BarChart data={AGENTS_SEED}>
                         <XAxis dataKey="name" tick={{ fontSize:10, fill:C.textMuted }} tickFormatter={v=>v.split(" ")[0]}/>
                         <YAxis tick={{ fontSize:10, fill:C.textMuted }} tickFormatter={v=>"$"+v/1000+"k"}/>
                         <Tooltip contentStyle={{ background:C.card, border:`1px solid ${C.border}`, borderRadius:4, fontSize:11 }} formatter={v=>"$"+new Intl.NumberFormat("en-US").format(v)}/>
@@ -474,7 +519,7 @@ export default function RaimakCRM() {
                   <div style={{ display:"grid", gridTemplateColumns:"2fr 1fr 1fr 1fr", padding:"6px 12px", background:"#F8FAFD", borderRadius:4, marginBottom:4 }}>
                     {["Agent","Sales","Revenue","Installs"].map(h=><Label key={h}>{h}</Label>)}
                   </div>
-                  {[...AGENTS].sort((a,b)=>b.revenue-a.revenue).map((a,i) => (
+                  {[...AGENTS_SEED].sort((a,b)=>b.revenue-a.revenue).map((a,i) => (
                     <div key={a.id} style={{ display:"grid", gridTemplateColumns:"2fr 1fr 1fr 1fr", padding:"10px 12px", borderBottom:`1px solid ${C.border}`, alignItems:"center" }}>
                       <div style={{ display:"flex", alignItems:"center", gap:10 }}>
                         <div style={{ width:24, height:24, borderRadius:"50%", background: i===0?C.amber+"33":C.cyan+"18", border:`1px solid ${i===0?C.amber:C.cyan}55`, display:"flex", alignItems:"center", justifyContent:"center", ...mono, fontSize:10, fontWeight:800, color:i===0?C.amber:C.cyan }}>{i+1}</div>
@@ -864,7 +909,7 @@ export default function RaimakCRM() {
             <Field label="Order Value"><Input value={newOrder.value} onChange={e=>setNewOrder({...newOrder,value:e.target.value})} placeholder="$0"/></Field>
             <Field label="Install Date"><Input value={newOrder.installDate} onChange={e=>setNewOrder({...newOrder,installDate:e.target.value})} placeholder="YYYY-MM-DD" type="date"/></Field>
             <Field label="Status"><Select value={newOrder.status} onChange={e=>setNewOrder({...newOrder,status:e.target.value})} options={["Pending","Scheduled","Installed","Cancelled"]}/></Field>
-            <Field label="Assigned Agent"><Select value={newOrder.agent} onChange={e=>setNewOrder({...newOrder,agent:e.target.value})} options={AGENTS.map(a=>a.name)}/></Field>
+            <Field label="Assigned Agent"><Select value={newOrder.agent} onChange={e=>setNewOrder({...newOrder,agent:e.target.value})} options={AGENTS_SEED.map(a=>a.name)}/></Field>
           </div>
           <div style={{ display:"flex", gap:10, justifyContent:"flex-end", marginTop:20 }}>
             <Btn variant="outline" onClick={()=>setShowAddOrder(false)}>Cancel</Btn>

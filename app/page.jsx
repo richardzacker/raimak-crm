@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
+import { useMsal } from "@azure/msal-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from "recharts";
 
 // ── Color System ─────────────────────────────────────────────────────────────
@@ -181,7 +182,12 @@ const MetricCard = ({ label, value, sub, color, icon }) => (
 // ── Main App ──────────────────────────────────────────────────────────────────
 export default function RaimakCRM() {
   useGoogleFonts();
-  const [accounts, setAccounts] = useState(initAccounts);
+  const { accounts: msalAccounts } = useMsal();
+  const msalUser = msalAccounts[0] || null;
+  const userName  = msalUser?.name || msalUser?.username?.split("@")[0] || "User";
+  const userEmail = msalUser?.username || "";
+  const userInitials = userName.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
+  const [accounts, setAccounts] = useState([]);
   const [loading, setLoading]   = useState(false);
   const [spError, setSpError]   = useState(null);
 
@@ -348,10 +354,10 @@ export default function RaimakCRM() {
           ))}
         </div>
         <div style={{ padding:12, borderTop:"1px solid #1A3A6B", display:"flex", alignItems:"center", gap:10 }}>
-          <div style={{ width:28, height:28, borderRadius:"50%", background:"#1A3A6E", border:"1px solid #2A5298", display:"flex", alignItems:"center", justifyContent:"center", ...mono, fontWeight:700, fontSize:11, color:"#67E8F9" }}>JD</div>
-          <div>
-            <div style={{ fontSize:11, fontWeight:600, color:"#F0F6FF" }}>Jordan Davis</div>
-            <div style={{ fontSize:10, color:"#93C5DE" }}>Account Executive</div>
+          <div style={{ width:28, height:28, borderRadius:"50%", background:"#1A3A6E", border:"1px solid #2A5298", display:"flex", alignItems:"center", justifyContent:"center", ...mono, fontWeight:700, fontSize:11, color:"#67E8F9" }}>{userInitials}</div>
+          <div style={{ overflow:"hidden" }}>
+            <div style={{ fontSize:11, fontWeight:600, color:"#F0F6FF", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{userName}</div>
+            <div style={{ fontSize:10, color:"#93C5DE", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{userEmail}</div>
           </div>
         </div>
       </div>
@@ -388,7 +394,14 @@ export default function RaimakCRM() {
                   <div style={{ display:"flex", flexWrap:"wrap", gap:4 }}>{a.lob.slice(0, sel?1:3).map(l=><LOBBadge key={l} lob={l}/>)}</div>
                 </div>
               ))}
-              <div style={{ ...mono, fontSize:10, color:C.textMuted, padding:"10px 16px" }}>Rows: {filtered.length}</div>
+              {filtered.length === 0 && (
+                <div style={{ padding:40, textAlign:"center" }}>
+                  <div style={{ fontSize:32, marginBottom:12 }}>🏢</div>
+                  <div style={{ ...mono, fontSize:12, color:C.textMuted, marginBottom:6 }}>// NO ACCOUNTS YET</div>
+                  <div style={{ fontSize:12, color:C.textMuted }}>Click <strong>+ Add Account</strong> or connect SharePoint to load real data.</div>
+                </div>
+              )}
+              {filtered.length > 0 && <div style={{ ...mono, fontSize:10, color:C.textMuted, padding:"10px 16px" }}>Rows: {filtered.length}</div>}
             </div>
           </div>
         )}

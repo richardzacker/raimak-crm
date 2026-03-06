@@ -1,24 +1,16 @@
 "use client";
-import { MsalProvider, useIsAuthenticated, useMsal } from "@azure/msal-react";
+import { MsalProvider } from "@azure/msal-react";
 import { PublicClientApplication, EventType } from "@azure/msal-browser";
 import { msalConfig } from "@/lib/authConfig";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
-
-const msalInstance = new PublicClientApplication(msalConfig);
-
-// Set active account on login success
-msalInstance.addEventCallback((event) => {
-  if (event.eventType === EventType.LOGIN_SUCCESS && event.payload?.account) {
-    msalInstance.setActiveAccount(event.payload.account);
-  }
-});
+import { useMsal } from "@azure/msal-react";
 
 function AuthGuard({ children }) {
   const { accounts } = useMsal();
-  const pathname  = usePathname();
-  const router    = useRouter();
-  const isLogin   = pathname === "/login";
+  const pathname = usePathname();
+  const router   = useRouter();
+  const isLogin  = pathname === "/login";
 
   useEffect(() => {
     if (!isLogin && accounts.length === 0) {
@@ -29,20 +21,40 @@ function AuthGuard({ children }) {
     }
   }, [accounts, isLogin, router]);
 
-  // On login page always render (shows login UI)
   if (isLogin) return children;
-  // On protected pages only render when authenticated
   if (accounts.length === 0) return null;
   return children;
+}
+
+function MsalWrapper({ children }) {
+  const [msalInstance, setMsalInstance] = useState(null);
+
+  useEffect(() => {
+    const instance = new PublicClientApplication(msalConfig);
+    instance.initialize().then(() => {
+      instance.addEventCallback((event) => {
+        if (event.eventType === EventType.LOGIN_SUCCESS && event.payload?.account) {
+          instance.setActiveAccount(event.payload.account);
+        }
+      });
+      setMsalInstance(instance);
+    });
+  }, []);
+
+  if (!msalInstance) return null;
+
+  return (
+    <MsalProvider instance={msalInstance}>
+      <AuthGuard>{children}</AuthGuard>
+    </MsalProvider>
+  );
 }
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body style={{ margin: 0, padding: 0 }}>
-        <MsalProvider instance={msalInstance}>
-          <AuthGuard>{children}</AuthGuard>
-        </MsalProvider>
+        <MsalWrapper>{children}</MsalWrapper>
       </body>
     </html>
   );

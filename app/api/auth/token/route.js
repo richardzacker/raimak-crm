@@ -27,4 +27,3 @@ export async function GET() {
   const data = await res.json();
   return Response.json({ access_token: data.access_token });
 }
-```

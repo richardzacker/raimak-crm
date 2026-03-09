@@ -1,10 +1,11 @@
-// app/api/auth/token/route.js
-// Server-side token endpoint — keeps client secret OUT of the browser
-
 export async function GET() {
-  const tenantId  = process.env.AZURE_TENANT_ID;
-  const clientId  = process.env.AZURE_CLIENT_ID;
+  const tenantId     = process.env.AZURE_TENANT_ID;
+  const clientId     = process.env.AZURE_CLIENT_ID;
   const clientSecret = process.env.AZURE_CLIENT_SECRET;
+
+  if (!tenantId || !clientId || !clientSecret) {
+    return Response.json({ error: "Missing Azure credentials" }, { status: 500 });
+  }
 
   const body = new URLSearchParams({
     grant_type:    "client_credentials",
@@ -19,9 +20,11 @@ export async function GET() {
   );
 
   if (!res.ok) {
-    return Response.json({ error: "Token fetch failed" }, { status: 401 });
+    const err = await res.text();
+    return Response.json({ error: "Token fetch failed", detail: err }, { status: 401 });
   }
 
   const data = await res.json();
   return Response.json({ access_token: data.access_token });
 }
+```

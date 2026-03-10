@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useMsal } from "@azure/msal-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from "recharts";
 
-// â”€â”€ Color System â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Color System ─────────────────────────────────────────────────────────────
 const C = {
   bg:       "#F4F7FC", sidebar: "#0E2347", card: "#FFFFFF",
   border:   "#D1DFF0", cyan:    "#0284C7", green:  "#059669",
@@ -27,7 +27,7 @@ const ORDER_STATUS_COLOR = {
 };
 const mono = { fontFamily:"'JetBrains Mono','Fira Code','Courier New',monospace" };
 
-// â”€â”€ Seed Data â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Seed Data ─────────────────────────────────────────────────────────────────
 const AGENTS_SEED = [
   { id:"a1", name:"Jordan Davis",   sales:18, revenue:142000, installs:15 },
   { id:"a2", name:"Priya Nair",     sales:24, revenue:198000, installs:22 },
@@ -35,64 +35,9 @@ const AGENTS_SEED = [
   { id:"a4", name:"Dana Reyes",     sales:19, revenue:155000, installs:17 },
   { id:"a5", name:"Luis Garza",     sales:8,  revenue:64000,  installs:7  },
 ];
-const initAccounts = [
-  { id:1, name:"City of Springfield",   contact:"Dana Reyes",   email:"dana@springfieldgov.org",  city:"Springfield, IL", phone:"217-555-0182", revenue:"$2,400,000", employees:850,  lob:["Frontier","Verizon Mobile"],
-    contracts:[
-      { id:"C-001", name:"Fiber Infrastructure Upgrade", stage:"Active",      value:"$1,200,000", close:"12/31/2025", lob:"Frontier"       },
-      { id:"C-002", name:"Enterprise Mobile Fleet",      stage:"Negotiation", value:"$840,000",   close:"9/15/2025",  lob:"Verizon Mobile" },
-    ],
-    orders:[
-      { id:"O-001", product:"Fiber 1Gig Install",    status:"Installed", installDate:"2025-03-15", agent:"Dana Reyes",   value:"$4,200"  },
-      { id:"O-002", product:"Mobile Device Package", status:"Scheduled", installDate:"2025-07-10", agent:"Jordan Davis", value:"$8,700"  },
-    ],
-    timeline:[
-      { type:"call",    label:"Call with Dana Reyes", date:"Today, 9:14 AM",    note:"Reviewed Q3 renewal terms for fiber contract." },
-      { type:"email",   label:"Email sent",           date:"Yesterday, 3:00 PM",note:"Sent updated pricing proposal for mobile fleet." },
-      { type:"meeting", label:"QBR Meeting",          date:"Jun 2, 2025",        note:"Quarterly business review â€” discussed expansion plans." },
-    ],
-  },
-  { id:2, name:"Hawthorne Logistics",   contact:"Marcus Bell",  email:"mbell@hawthorne.com",       city:"Chicago, IL",     phone:"312-555-0047", revenue:"$5,100,000", employees:1200, lob:["Kinetic","Frontier"],
-    contracts:[
-      { id:"C-003", name:"SD-WAN Nationwide Rollout",      stage:"Propose", value:"$2,300,000", close:"10/01/2025", lob:"Kinetic"  },
-      { id:"C-004", name:"Dark Fiber Lease â€” Chicago Hub", stage:"Active",  value:"$620,000",   close:"01/01/2026", lob:"Frontier" },
-    ],
-    orders:[
-      { id:"O-003", product:"SD-WAN Node x12",     status:"Pending",   installDate:"2025-08-20", agent:"Marcus Bell", value:"$14,400" },
-      { id:"O-004", product:"Dark Fiber Activation",status:"Installed", installDate:"2025-02-01", agent:"Priya Nair",  value:"$6,000"  },
-    ],
-    timeline:[
-      { type:"meeting", label:"Executive Briefing", date:"Jun 5, 2025", note:"Presented SD-WAN architecture to CTO." },
-      { type:"call",    label:"Follow-up call",     date:"Jun 3, 2025", note:"Marcus confirmed budget approval pending legal." },
-    ],
-  },
-  { id:3, name:"Meridian Health Group", contact:"Priya Nair",   email:"p.nair@meridianhealth.org", city:"St. Louis, MO",   phone:"314-555-0099", revenue:"$8,700,000", employees:3400, lob:["Verizon Mobile","Kinetic"],
-    contracts:[
-      { id:"C-005", name:"HIPAA-Compliant Mobile Devices", stage:"Active",  value:"$3,100,000", close:"03/31/2026", lob:"Verizon Mobile" },
-      { id:"C-006", name:"Hospital WAN Upgrade",           stage:"Qualify", value:"$1,400,000", close:"11/15/2025", lob:"Kinetic"        },
-    ],
-    orders:[
-      { id:"O-005", product:"MDM Suite x200",     status:"Installed", installDate:"2025-01-15", agent:"Priya Nair",   value:"$22,000" },
-      { id:"O-006", product:"WAN Equipment",      status:"Scheduled", installDate:"2025-09-01", agent:"Jordan Davis", value:"$11,200" },
-    ],
-    timeline:[
-      { type:"email", label:"RFP Response Sent", date:"Jun 6, 2025",  note:"Submitted full proposal in response to Meridian RFP." },
-      { type:"call",  label:"Discovery Call",    date:"May 28, 2025", note:"Identified need for HIPAA-compliant MDM solution."    },
-    ],
-  },
-  { id:4, name:"TerraVerde Construction",contact:"Luis Garza",  email:"lgarza@terraverde.com",     city:"Kansas City, MO", phone:"816-555-0213", revenue:"$1,800,000", employees:410,  lob:["Frontier"],
-    contracts:[
-      { id:"C-007", name:"Field Office Connectivity", stage:"Negotiate", value:"$390,000", close:"08/31/2025", lob:"Frontier" },
-    ],
-    orders:[
-      { id:"O-007", product:"Temp Connectivity Kit", status:"Pending", installDate:"2025-08-01", agent:"Luis Garza", value:"$3,100" },
-    ],
-    timeline:[
-      { type:"call", label:"Intro Call", date:"Jun 1, 2025", note:"Discussed connectivity needs for remote job sites." },
-    ],
-  },
-];
+// Sample data removed - loads from SharePoint
 
-// â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Helpers ───────────────────────────────────────────────────────────────────
 function useGoogleFonts() {
   useEffect(() => {
     const l = document.createElement("link");
@@ -133,7 +78,7 @@ const Modal = ({ title, onClose, children }) => (
     <div style={{ background:C.card, border:`1px solid ${C.border}`, borderRadius:8, width:520, maxHeight:"85vh", overflow:"auto", boxShadow:"0 20px 60px rgba(0,0,0,0.2)" }}>
       <div style={{ padding:"16px 20px", borderBottom:`1px solid ${C.border}`, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
         <div style={{ ...mono, fontWeight:800, fontSize:13, letterSpacing:1.5, textTransform:"uppercase", color:C.text }}>{title}</div>
-        <button onClick={onClose} style={{ background:"transparent", border:`1px solid ${C.border}`, borderRadius:4, color:C.textMuted, padding:"4px 10px", cursor:"pointer", fontSize:12 }}>âœ•</button>
+        <button onClick={onClose} style={{ background:"transparent", border:`1px solid ${C.border}`, borderRadius:4, color:C.textMuted, padding:"4px 10px", cursor:"pointer", fontSize:12 }}>✕</button>
       </div>
       <div style={{ padding:20 }}>{children}</div>
     </div>
@@ -165,7 +110,7 @@ const Btn = ({ onClick, children, variant, style }) => (
   }}>{children}</button>
 );
 
-// â”€â”€ Metric Card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Metric Card ───────────────────────────────────────────────────────────────
 const MetricCard = ({ label, value, sub, color, icon }) => (
   <Card topColor={color} style={{ padding:16 }}>
     <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between" }}>
@@ -179,10 +124,10 @@ const MetricCard = ({ label, value, sub, color, icon }) => (
   </Card>
 );
 
-// â”€â”€ Main App â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Main App ──────────────────────────────────────────────────────────────────
 export default function RaimakCRM() {
   useGoogleFonts();
-  const { accounts: msalAccounts } = useMsal();
+  const { accounts: msalAccounts, instance } = useMsal();
   const msalUser = msalAccounts[0] || null;
   const userName  = msalUser?.name || msalUser?.username?.split("@")[0] || "User";
   const userEmail = msalUser?.username || "";
@@ -191,39 +136,57 @@ export default function RaimakCRM() {
   const [loading, setLoading]   = useState(false);
   const [spError, setSpError]   = useState(null);
 
-  // â”€â”€ Load real data from SharePoint â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Load real data from SharePoint ──────────────────────────────────────
   const loadFromSharePoint = useCallback(async () => {
     try {
       setLoading(true);
-      const { getAccounts, getAgents } = await import("@/lib/graph");
-      const [spAccounts] = await Promise.all([getAccounts()]);
-      if (spAccounts && spAccounts.length > 0) {
-        // Merge SharePoint accounts with empty contracts/orders/timeline
-        const merged = spAccounts.map(a => ({
-          ...a,
-          contracts: [],
-          orders:    [],
-          timeline:  [],
-        }));
-        setAccounts(merged);
-      }
+      const siteId   = process.env.NEXT_PUBLIC_SP_SITE_ID;
+      const listId   = process.env.NEXT_PUBLIC_SP_LIST_ACCOUNTS;
+      if (!siteId || !listId) throw new Error("SharePoint env vars not set");
+
+      // Use MSAL to get a token for Graph API
+      const { instance: msalInst, accounts: msalAccs } = { instance, accounts: msalAccounts };
+      const tokenResp = await msalInst.acquireTokenSilent({
+        scopes: ["https://graph.microsoft.com/Sites.Read.All"],
+        account: msalAccs[0],
+      });
+      const token = tokenResp.accessToken;
+
+      const res = await fetch(
+        `https://graph.microsoft.com/v1.0/sites/${siteId}/lists/${listId}/items?expand=fields`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (!res.ok) throw new Error(`SharePoint GET failed: ${res.status}`);
+      const data = await res.json();
+      const spAccounts = (data.value || []).map(item => ({
+        id:          item.id,
+        name:        item.fields?.Title || "Unnamed",
+        contact:     item.fields?.PrimaryContact || "",
+        email:       item.fields?.Email || "",
+        phone:       item.fields?.Phone || "",
+        city:        item.fields?.City || "",
+        revenue:     item.fields?.AnnualRevenue || 0,
+        employees:   item.fields?.Employees || 0,
+        lob:         item.fields?.LinesOfBusiness ? item.fields.LinesOfBusiness.split(";") : [],
+        contracts:   [],
+        orders:      [],
+        timeline:    [],
+      }));
+      if (spAccounts.length > 0) setAccounts(spAccounts);
     } catch (err) {
-      // SharePoint not configured yet â€” fall back to sample data silently
       setSpError(err.message);
       console.warn("SharePoint not connected, using sample data:", err.message);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [msalAccounts, instance]);
 
   useEffect(() => {
-    // Only attempt SharePoint load if env vars are set
-    if (process.env.NEXT_PUBLIC_SP_SITE_ID) {
+    if (process.env.NEXT_PUBLIC_SP_SITE_ID && msalAccounts.length > 0) {
       loadFromSharePoint();
     }
-  }, [loadFromSharePoint]);
+  }, [loadFromSharePoint, msalAccounts]);
 
-  const [accounts_placeholder] = useState(null); // unused, kept for linting
   const [view, setView]   = useState("accounts");
   const [sel,  setSel]    = useState(null);
   const [tab,  setTab]    = useState("Summary");
@@ -299,11 +262,11 @@ export default function RaimakCRM() {
   };
 
   const navItems = [
-    { id:"accounts",  label:"Accounts",    icon:"â–£" },
-    { id:"pipeline",  label:"Pipeline",    icon:"â—ˆ", badge: allContracts.filter(c=>c.stage!=="Active").length },
-    { id:"orders",    label:"Orders",      icon:"â—‰", badge: pendingOrders||null },
-    { id:"reports",   label:"Reports",     icon:"â—‡" },
-    { id:"activities",label:"Activity Log",icon:"â‰¡" },
+    { id:"accounts",  label:"Accounts",    icon:"▣" },
+    { id:"pipeline",  label:"Pipeline",    icon:"◈", badge: allContracts.filter(c=>c.stage!=="Active").length },
+    { id:"orders",    label:"Orders",      icon:"◉", badge: pendingOrders||null },
+    { id:"reports",   label:"Reports",     icon:"◇" },
+    { id:"activities",label:"Activity Log",icon:"≡" },
   ];
 
   return (
@@ -315,7 +278,7 @@ export default function RaimakCRM() {
       )}
       {spError && process.env.NODE_ENV === "development" && (
         <div style={{ position:"fixed", bottom:0, left:0, right:0, zIndex:9999, background:"#DC2626", color:"#fff", textAlign:"center", padding:"6px 0", fontSize:10, fontFamily:"monospace" }}>
-          SharePoint: {spError} â€” showing sample data
+          SharePoint: {spError} — showing sample data
         </div>
       )}
 
@@ -328,7 +291,7 @@ export default function RaimakCRM() {
             </div>
             <div>
               <div style={{ ...mono, fontWeight:900, fontSize:13, color:"#FFFFFF", letterSpacing:2 }}>RAIMAK</div>
-              <div style={{ ...mono, fontSize:9, color:"#93C5DE", letterSpacing:1 }}>CRM â€¢ V2.0</div>
+              <div style={{ ...mono, fontSize:9, color:"#93C5DE", letterSpacing:1 }}>CRM • V2.0</div>
             </div>
           </div>
         </div>
@@ -365,13 +328,13 @@ export default function RaimakCRM() {
       {/* MAIN */}
       <div style={{ flex:1, display:"flex", overflow:"hidden" }}>
 
-        {/* â”€â”€ ACCOUNTS â”€â”€ */}
+        {/* ── ACCOUNTS ── */}
         {(view==="accounts" || view==="contacts") && (
           <div style={{ width: sel ? 380 : "100%", borderRight: sel ? `1px solid ${C.border}` : "none", display:"flex", flexDirection:"column", overflow:"hidden" }}>
             <div style={{ padding:"14px 20px", borderBottom:`1px solid ${C.border}`, display:"flex", alignItems:"flex-start", justifyContent:"space-between" }}>
               <div>
                 <div style={{ ...mono, fontWeight:900, fontSize:16, letterSpacing:2, textTransform:"uppercase" }}>Accounts</div>
-                <div style={{ ...mono, fontSize:10, color:C.cyan, marginTop:3, letterSpacing:1 }}>// MY ACTIVE Â· {filtered.length} RECORDS</div>
+                <div style={{ ...mono, fontSize:10, color:C.cyan, marginTop:3, letterSpacing:1 }}>// MY ACTIVE · {filtered.length} RECORDS</div>
               </div>
               <Btn onClick={() => setShowAddAccount(true)}>+ ADD ACCOUNT</Btn>
             </div>
@@ -396,7 +359,6 @@ export default function RaimakCRM() {
               ))}
               {filtered.length === 0 && (
                 <div style={{ padding:40, textAlign:"center" }}>
-                  <div style={{ fontSize:32, marginBottom:12 }}>ðŸ¢</div>
                   <div style={{ ...mono, fontSize:12, color:C.textMuted, marginBottom:6 }}>// NO ACCOUNTS YET</div>
                   <div style={{ fontSize:12, color:C.textMuted }}>Click <strong>+ Add Account</strong> or connect SharePoint to load real data.</div>
                 </div>
@@ -406,7 +368,7 @@ export default function RaimakCRM() {
           </div>
         )}
 
-        {/* â”€â”€ PIPELINE â”€â”€ */}
+        {/* ── PIPELINE ── */}
         {view==="pipeline" && (
           <div style={{ flex:1, overflow:"auto", padding:20 }}>
             <div style={{ ...mono, fontWeight:900, fontSize:16, letterSpacing:2, textTransform:"uppercase" }}>Pipeline</div>
@@ -439,13 +401,13 @@ export default function RaimakCRM() {
           </div>
         )}
 
-        {/* â”€â”€ ORDERS â”€â”€ */}
+        {/* ── ORDERS ── */}
         {view==="orders" && (
           <div style={{ flex:1, overflow:"auto", padding:20 }}>
             <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", marginBottom:20 }}>
               <div>
                 <div style={{ ...mono, fontWeight:900, fontSize:16, letterSpacing:2, textTransform:"uppercase" }}>Orders</div>
-                <div style={{ ...mono, fontSize:10, color:C.cyan, marginTop:3, letterSpacing:1 }}>// INSTALL DATES & ORDER STATUSES Â· {allOrders.length} RECORDS</div>
+                <div style={{ ...mono, fontSize:10, color:C.cyan, marginTop:3, letterSpacing:1 }}>// INSTALL DATES & ORDER STATUSES · {allOrders.length} RECORDS</div>
               </div>
             </div>
             {/* Status summary */}
@@ -480,11 +442,11 @@ export default function RaimakCRM() {
           </div>
         )}
 
-        {/* â”€â”€ REPORTS â”€â”€ */}
+        {/* ── REPORTS ── */}
         {view==="reports" && (
           <div style={{ flex:1, overflow:"auto", padding:20 }}>
             <div style={{ ...mono, fontWeight:900, fontSize:16, letterSpacing:2, textTransform:"uppercase" }}>Reports</div>
-            <div style={{ ...mono, fontSize:10, color:C.cyan, marginTop:3, marginBottom:16, letterSpacing:1 }}>// SALES Â· INSTALLS Â· ORDERS Â· REVENUE</div>
+            <div style={{ ...mono, fontSize:10, color:C.cyan, marginTop:3, marginBottom:16, letterSpacing:1 }}>// SALES · INSTALLS · ORDERS · REVENUE</div>
 
             {/* Report Tabs */}
             <div style={{ display:"flex", gap:4, marginBottom:20, borderBottom:`1px solid ${C.border}`, paddingBottom:0 }}>
@@ -500,9 +462,9 @@ export default function RaimakCRM() {
             {reportTab==="sales" && (
               <div>
                 <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:12, marginBottom:20 }}>
-                  <MetricCard label="Total Sales" value={AGENTS_SEED.reduce((s,a)=>s+a.sales,0)} sub="All agents combined" color={C.cyan} icon="ðŸ†"/>
-                  <MetricCard label="Total Revenue" value={"$"+new Intl.NumberFormat("en-US").format(AGENTS_SEED.reduce((s,a)=>s+a.revenue,0))} sub="Closed contracts" color={C.green} icon="ðŸ’°"/>
-                  <MetricCard label="Top Agent" value={AGENTS_SEED.sort((a,b)=>b.sales-a.sales)[0].name.split(" ")[0]} sub={`${AGENTS[0].sales} sales this period`} color={C.amber} icon="â­"/>
+                  <MetricCard label="Total Sales" value={AGENTS_SEED.reduce((s,a)=>s+a.sales,0)} sub="All agents combined" color={C.cyan} icon=""/>
+                  <MetricCard label="Total Revenue" value={"$"+new Intl.NumberFormat("en-US").format(AGENTS_SEED.reduce((s,a)=>s+a.revenue,0))} sub="Closed contracts" color={C.green} icon=""/>
+                  <MetricCard label="Top Agent" value={[...AGENTS_SEED].sort((a,b)=>b.sales-a.sales)[0]?.name.split(" ")[0] || "N/A"} sub={`${[...AGENTS_SEED].sort((a,b)=>b.sales-a.sales)[0]?.sales || 0} sales this period`} color={C.amber} icon=""/>
                 </div>
                 <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16 }}>
                   <Card topColor={C.cyan}>
@@ -552,9 +514,9 @@ export default function RaimakCRM() {
             {reportTab==="installs" && (
               <div>
                 <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:12, marginBottom:20 }}>
-                  <MetricCard label="Total Installs" value={installedOrders} sub="Completed" color={C.green} icon="âœ…"/>
-                  <MetricCard label="Scheduled" value={allOrders.filter(o=>o.status==="Scheduled").length} sub="Upcoming installs" color={C.cyan} icon="ðŸ“…"/>
-                  <MetricCard label="Pending" value={pendingOrders} sub="Awaiting scheduling" color={C.amber} icon="â³"/>
+                  <MetricCard label="Total Installs" value={installedOrders} sub="Completed" color={C.green} icon=""/>
+                  <MetricCard label="Scheduled" value={allOrders.filter(o=>o.status==="Scheduled").length} sub="Upcoming installs" color={C.cyan} icon=""/>
+                  <MetricCard label="Pending" value={pendingOrders} sub="Awaiting scheduling" color={C.amber} icon=""/>
                 </div>
                 <Card topColor={C.green}>
                   <Label style={{ display:"block", marginBottom:14 }}>Monthly Installs Trend</Label>
@@ -590,7 +552,7 @@ export default function RaimakCRM() {
               <div>
                 <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:12, marginBottom:20 }}>
                   {Object.entries(ORDER_STATUS_COLOR).map(([status,col]) => (
-                    <MetricCard key={status} label={status} value={allOrders.filter(o=>o.status===status).length} sub="orders" color={col} icon={{ Pending:"â³", Scheduled:"ðŸ“…", Installed:"âœ…", Cancelled:"âŒ" }[status]}/>
+                    <MetricCard key={status} label={status} value={allOrders.filter(o=>o.status===status).length} sub="orders" color={col} icon={{ Pending:"", Scheduled:"", Installed:"", Cancelled:"❌" }[status]}/>
                   ))}
                 </div>
                 <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16 }}>
@@ -624,9 +586,9 @@ export default function RaimakCRM() {
             {reportTab==="revenue" && (
               <div>
                 <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:12, marginBottom:20 }}>
-                  <MetricCard label="Total Pipeline" value={"$"+new Intl.NumberFormat("en-US").format(totalRevenue)} sub="All contract values" color={C.cyan} icon="ðŸ“ˆ"/>
-                  <MetricCard label="Active Contracts" value={activeCount} sub="Currently live" color={C.green} icon="âœ…"/>
-                  <MetricCard label="Avg Contract" value={"$"+new Intl.NumberFormat("en-US").format(Math.round(totalRevenue/Math.max(allContracts.length,1)))} sub="Per contract" color={C.purple} icon="ðŸ’¡"/>
+                  <MetricCard label="Total Pipeline" value={"$"+new Intl.NumberFormat("en-US").format(totalRevenue)} sub="All contract values" color={C.cyan} icon=""/>
+                  <MetricCard label="Active Contracts" value={activeCount} sub="Currently live" color={C.green} icon=""/>
+                  <MetricCard label="Avg Contract" value={"$"+new Intl.NumberFormat("en-US").format(Math.round(totalRevenue/Math.max(allContracts.length,1)))} sub="Per contract" color={C.purple} icon="💡"/>
                 </div>
                 <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16 }}>
                   <Card topColor={C.cyan}>
@@ -674,7 +636,7 @@ export default function RaimakCRM() {
           </div>
         )}
 
-        {/* â”€â”€ ACTIVITY LOG â”€â”€ */}
+        {/* ── ACTIVITY LOG ── */}
         {view==="activities" && (
           <div style={{ flex:1, overflow:"auto", padding:20 }}>
             <div style={{ ...mono, fontWeight:900, fontSize:16, letterSpacing:2, textTransform:"uppercase" }}>Activity Log</div>
@@ -682,7 +644,7 @@ export default function RaimakCRM() {
             {accounts.flatMap(a=>a.timeline.map(t=>({...t,account:a.name}))).map((t,i) => (
               <div key={i} style={{ display:"flex", gap:14, padding:"12px 0", borderBottom:`1px solid ${C.border}` }}>
                 <div style={{ width:32, height:32, borderRadius:4, background:C.card, border:`1px solid ${C.border}`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, fontSize:13 }}>
-                  {{"call":"ðŸ“ž","email":"âœ‰ï¸","meeting":"ðŸ“…"}[t.type]||"ðŸ“Œ"}
+                  {{"call":"📞","email":"✉️","meeting":""}[t.type]||"📌"}
                 </div>
                 <div>
                   <div style={{ fontWeight:600, fontSize:12 }}>{t.label}</div>
@@ -695,7 +657,7 @@ export default function RaimakCRM() {
           </div>
         )}
 
-        {/* â”€â”€ ACCOUNT DETAIL â”€â”€ */}
+        {/* ── ACCOUNT DETAIL ── */}
         {sel && (view==="accounts"||view==="contacts") && (
           <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden" }}>
             <div style={{ padding:"14px 20px", borderBottom:`1px solid ${C.border}`, background:C.card }}>
@@ -706,13 +668,13 @@ export default function RaimakCRM() {
                   </div>
                   <div>
                     <div style={{ fontWeight:700, fontSize:15 }}>{sel.name}</div>
-                    <div style={{ ...mono, fontSize:9, color:C.cyan, marginTop:3, letterSpacing:1 }}>// ACCOUNT Â· {sel.city.toUpperCase()}</div>
+                    <div style={{ ...mono, fontSize:9, color:C.cyan, marginTop:3, letterSpacing:1 }}>// ACCOUNT · {sel.city.toUpperCase()}</div>
                   </div>
                 </div>
                 <div style={{ display:"flex", gap:10, alignItems:"center" }}>
                   <Btn variant="outline" onClick={()=>setShowAddContract(true)}>+ Contract</Btn>
                   <Btn variant="outline" onClick={()=>setShowAddOrder(true)}>+ Order</Btn>
-                  <button onClick={()=>setSel(null)} style={{ background:"transparent", border:`1px solid ${C.border}`, borderRadius:4, color:C.textMuted, padding:"5px 10px", cursor:"pointer", fontSize:11, ...mono }}>âœ•</button>
+                  <button onClick={()=>setSel(null)} style={{ background:"transparent", border:`1px solid ${C.border}`, borderRadius:4, color:C.textMuted, padding:"5px 10px", cursor:"pointer", fontSize:11, ...mono }}>✕</button>
                 </div>
               </div>
               <div style={{ display:"flex", gap:0, borderTop:`1px solid ${C.border}`, paddingTop:10 }}>
@@ -770,7 +732,7 @@ export default function RaimakCRM() {
                           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
                             <div>
                               <div style={{ fontWeight:700, fontSize:13, marginBottom:4 }}>{c.name}</div>
-                              <div style={{ color:C.textMuted, fontSize:10, marginBottom:8, ...mono }}>{c.id} Â· CLOSE: {c.close}</div>
+                              <div style={{ color:C.textMuted, fontSize:10, marginBottom:8, ...mono }}>{c.id} · CLOSE: {c.close}</div>
                               <div style={{ display:"flex", gap:6 }}><StageBadge stage={c.stage}/><LOBBadge lob={c.lob}/></div>
                             </div>
                             <div style={{ textAlign:"right" }}>
@@ -798,10 +760,10 @@ export default function RaimakCRM() {
                           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
                             <div>
                               <div style={{ fontWeight:700, fontSize:13, marginBottom:4 }}>{o.product}</div>
-                              <div style={{ color:C.textMuted, fontSize:10, marginBottom:8, ...mono }}>{o.id} Â· AGENT: {o.agent}</div>
+                              <div style={{ color:C.textMuted, fontSize:10, marginBottom:8, ...mono }}>{o.id} · AGENT: {o.agent}</div>
                               <div style={{ display:"flex", gap:6, alignItems:"center" }}>
                                 <StatusBadge status={o.status}/>
-                                <span style={{ ...mono, fontSize:10, color:C.textMuted }}>ðŸ“… {o.installDate}</span>
+                                <span style={{ ...mono, fontSize:10, color:C.textMuted }}> {o.installDate}</span>
                               </div>
                             </div>
                             <div style={{ textAlign:"right" }}>
@@ -823,14 +785,14 @@ export default function RaimakCRM() {
                       <div style={{ ...mono, fontWeight:800, color:C.cyan, fontSize:10, letterSpacing:1, marginBottom:8 }}>// AI HIGHLIGHTS</div>
                       {sel.timeline.map((t,i) => (
                         <div key={i} style={{ fontSize:11, color:C.textMuted, marginBottom:4, display:"flex", gap:6 }}>
-                          <span style={{ color:C.cyan }}>â–¸</span>{t.note}
+                          <span style={{ color:C.cyan }}>▸</span>{t.note}
                         </div>
                       ))}
                     </div>
                     {sel.timeline.map((t,i) => (
                       <div key={i} style={{ display:"flex", gap:12, paddingBottom:14, borderBottom:`1px solid ${C.border}`, marginBottom:14 }}>
                         <div style={{ width:32, height:32, borderRadius:4, background:C.card, border:`1px solid ${C.border}`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                          {{"call":"ðŸ“ž","email":"âœ‰ï¸","meeting":"ðŸ“…"}[t.type]||"ðŸ“Œ"}
+                          {{"call":"📞","email":"✉️","meeting":""}[t.type]||"📌"}
                         </div>
                         <div>
                           <div style={{ fontWeight:600, fontSize:12 }}>{t.label}</div>
@@ -847,7 +809,7 @@ export default function RaimakCRM() {
               <div style={{ width:210, borderLeft:`1px solid ${C.border}`, padding:14, flexShrink:0, overflow:"auto", background:"#F8FAFD" }}>
                 <Label style={{ display:"block", marginBottom:10 }}>Assistant</Label>
                 <div style={{ background:C.amber+"18", border:`1px solid ${C.amber}33`, borderLeft:`3px solid ${C.amber}`, borderRadius:4, padding:10, marginBottom:14 }}>
-                  <div style={{ ...mono, fontSize:10, fontWeight:800, color:C.amber, marginBottom:5, letterSpacing:1 }}>ðŸ”” REMINDER</div>
+                  <div style={{ ...mono, fontSize:10, fontWeight:800, color:C.amber, marginBottom:5, letterSpacing:1 }}>🔔 REMINDER</div>
                   {sel.contracts.slice(0,1).map(c=>(
                     <div key={c.id} style={{ fontSize:11, color:C.textMuted }}>Closing soon: <span style={{ color:C.text, fontWeight:600 }}>{c.name}</span></div>
                   ))}
@@ -868,7 +830,7 @@ export default function RaimakCRM() {
                   <Card key={o.id} style={{ padding:10, marginBottom:8 }}>
                     <div style={{ fontSize:11, fontWeight:600, marginBottom:5 }}>{o.product}</div>
                     <StatusBadge status={o.status}/>
-                    <div style={{ ...mono, fontSize:10, color:C.textMuted, marginTop:6 }}>ðŸ“… {o.installDate}</div>
+                    <div style={{ ...mono, fontSize:10, color:C.textMuted, marginTop:6 }}> {o.installDate}</div>
                   </Card>
                 ))}
               </div>
@@ -877,7 +839,7 @@ export default function RaimakCRM() {
         )}
       </div>
 
-      {/* â”€â”€ MODALS â”€â”€ */}
+      {/* ── MODALS ── */}
 
       {showAddAccount && (
         <Modal title="Add New Account" onClose={()=>setShowAddAccount(false)}>
@@ -901,7 +863,7 @@ export default function RaimakCRM() {
       )}
 
       {showAddContract && sel && (
-        <Modal title={`Add Contract â€” ${sel.name}`} onClose={()=>setShowAddContract(false)}>
+        <Modal title={`Add Contract — ${sel.name}`} onClose={()=>setShowAddContract(false)}>
           <Field label="Contract Name"><Input value={newContract.name} onChange={e=>setNewContract({...newContract,name:e.target.value})} placeholder="e.g. Fiber Upgrade Phase 2"/></Field>
           <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
             <Field label="Contract Value"><Input value={newContract.value} onChange={e=>setNewContract({...newContract,value:e.target.value})} placeholder="$0"/></Field>
@@ -917,7 +879,7 @@ export default function RaimakCRM() {
       )}
 
       {showAddOrder && sel && (
-        <Modal title={`Add Order â€” ${sel.name}`} onClose={()=>setShowAddOrder(false)}>
+        <Modal title={`Add Order — ${sel.name}`} onClose={()=>setShowAddOrder(false)}>
           <Field label="Product / Service"><Input value={newOrder.product} onChange={e=>setNewOrder({...newOrder,product:e.target.value})} placeholder="e.g. Fiber 1Gig Install"/></Field>
           <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
             <Field label="Order Value"><Input value={newOrder.value} onChange={e=>setNewOrder({...newOrder,value:e.target.value})} placeholder="$0"/></Field>
@@ -935,4 +897,3 @@ export default function RaimakCRM() {
     </div>
   );
 }
-

@@ -13,7 +13,7 @@ const C = {
 const LOB = {
   Frontier:         { bg:"#E0F2FE", text:"#0284C7", border:"#BAE6FD", dot:"#0284C7" },
   Kinetic:          { bg:"#D1FAE5", text:"#059669", border:"#A7F3D0", dot:"#059669" },
-  "Verizon Mobile": { bg:"#EDE9FE", text:"#7C3AED", border:"#DDD6FE", dot:"#7C3AED" },
+  "Verizon Mobile": { bg:"#FEE2E2", text:"#DC2626", border:"#FECACA", dot:"#DC2626" },
 };
 const STAGE_COLOR = {
   Active:"#059669", Negotiate:"#D97706", Negotiation:"#D97706",

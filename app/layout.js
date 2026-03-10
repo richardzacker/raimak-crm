@@ -1,24 +1,34 @@
 "use client";
 import { MsalProvider, useMsal } from "@azure/msal-react";
-import { PublicClientApplication, EventType } from "@azure/msal-browser";
+import { PublicClientApplication, EventType, InteractionStatus } from "@azure/msal-browser";
 import { msalConfig } from "@/lib/authConfig";
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 
 function AuthGuard({ children }) {
-  const { accounts } = useMsal();
+  const { accounts, inProgress } = useMsal();
   const pathname = usePathname();
   const router = useRouter();
   const isLogin = pathname === "/login" || pathname === "/login/";
+  const isReady = inProgress === InteractionStatus.None;
 
   useEffect(() => {
+    if (!isReady) return; // Wait until MSAL is done with any interaction
     if (!isLogin && accounts.length === 0) {
       router.replace("/login/");
     }
     if (isLogin && accounts.length > 0) {
       router.replace("/");
     }
-  }, [accounts, isLogin, router]);
+  }, [accounts, isLogin, router, isReady]);
+
+  // Always show loading while MSAL is processing
+  if (!isReady) return (
+    <div style={{ background:"#0E2347", height:"100vh", display:"flex", 
+      alignItems:"center", justifyContent:"center" }}>
+      <div style={{ color:"#93C5DE", fontFamily:"monospace", fontSize:12 }}>// AUTHENTICATING...</div>
+    </div>
+  );
 
   if (isLogin) return children;
   if (accounts.length === 0) return null;
@@ -38,7 +48,6 @@ export default function RootLayout({ children }) {
             instance.setActiveAccount(event.payload.account);
           }
         });
-        // Handle redirect promise on init
         return instance.handleRedirectPromise();
       })
       .then(() => {

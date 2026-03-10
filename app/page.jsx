@@ -309,12 +309,18 @@ export default function RaimakCRM() {
             );
           })}
           <Label light style={{ padding:"16px 8px 8px", display:"block" }}>Lines of Business</Label>
-          {Object.entries(LOB).map(([name,s]) => (
-            <div key={name} style={{ display:"flex", alignItems:"center", gap:8, padding:"6px 10px", borderRadius:4, cursor:"pointer", fontSize:11 }}>
-              <span style={{ width:6, height:6, borderRadius:"50%", background:s.dot, flexShrink:0, boxShadow:`0 0 6px ${s.dot}` }} />
-              <span style={{ fontWeight:500, color:"#E0EEFF" }}>{name}</span>
-            </div>
-          ))}
+          {Object.entries(LOB).map(([name,s]) => {
+            const lobId = "lob_"+name.replace(" ","_");
+            const active = view===lobId;
+            return (
+              <div key={name} onClick={() => { setView(lobId); setSel(null); }}
+                style={{ display:"flex", alignItems:"center", gap:8, padding:"6px 10px", borderRadius:4,
+                  cursor:"pointer", fontSize:11, background: active ? "#1A3A6E" : "transparent" }}>
+                <span style={{ width:6, height:6, borderRadius:"50%", background:s.dot, flexShrink:0, boxShadow:`0 0 6px ${s.dot}` }} />
+                <span style={{ fontWeight: active ? 700 : 500, color: active ? "#FFFFFF" : "#E0EEFF" }}>{name}</span>
+              </div>
+            );
+          })}
         </div>
         <div style={{ padding:12, borderTop:"1px solid #1A3A6B", display:"flex", alignItems:"center", gap:10 }}>
           <div style={{ width:28, height:28, borderRadius:"50%", background:"#1A3A6E", border:"1px solid #2A5298", display:"flex", alignItems:"center", justifyContent:"center", ...mono, fontWeight:700, fontSize:11, color:"#67E8F9" }}>{userInitials}</div>
@@ -837,6 +843,131 @@ export default function RaimakCRM() {
             </div>
           </div>
         )}
+
+        {/* ── LOB DASHBOARDS ── */}
+        {(view==="lob_Frontier"||view==="lob_Kinetic"||view==="lob_Verizon_Mobile") && (() => {
+          const lobName = view==="lob_Frontier" ? "Frontier" : view==="lob_Kinetic" ? "Kinetic" : "Verizon Mobile";
+          const lobStyle = LOB[lobName];
+          const lobAccounts = accounts.filter(a => a.lob && a.lob.includes(lobName));
+          const lobContracts = lobAccounts.flatMap(a => (a.contracts||[]).map(c=>({...c,accountName:a.name})));
+          const lobOrders = lobAccounts.flatMap(a => (a.orders||[]).map(o=>({...o,accountName:a.name})));
+          const lobRevenue = lobContracts.reduce((s,c)=>s+(c.value||0),0);
+          const lobPipeline = lobContracts.filter(c=>c.stage!=="Active").reduce((s,c)=>s+(c.value||0),0);
+          const lobInstalled = lobOrders.filter(o=>o.status==="Installed").length;
+          const lobPending = lobOrders.filter(o=>o.status==="Pending").length;
+
+          return (
+            <div style={{ flex:1, overflow:"auto", padding:24 }}>
+              {/* Header */}
+              <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:24 }}>
+                <div>
+                  <div style={{ display:"flex", alignItems:"center", gap:12 }}>
+                    <div style={{ width:10, height:10, borderRadius:"50%", background:lobStyle.dot, boxShadow:`0 0 8px ${lobStyle.dot}` }}/>
+                    <div style={{ ...mono, fontWeight:900, fontSize:20, letterSpacing:2, textTransform:"uppercase", color:lobStyle.text }}>{lobName}</div>
+                  </div>
+                  <div style={{ ...mono, fontSize:10, color:C.textMuted, marginTop:4, letterSpacing:1 }}>// LINE OF BUSINESS DASHBOARD</div>
+                </div>
+                <Btn onClick={() => setShowAddAccount(true)}>+ ADD ACCOUNT</Btn>
+              </div>
+
+              {/* Metrics */}
+              <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:12, marginBottom:24 }}>
+                <MetricCard label="Accounts" value={lobAccounts.length} sub="Active accounts" color={lobStyle.text} icon=""/>
+                <MetricCard label="Revenue" value={"$"+new Intl.NumberFormat("en-US").format(lobRevenue)} sub="Closed contracts" color={C.green} icon=""/>
+                <MetricCard label="Pipeline" value={"$"+new Intl.NumberFormat("en-US").format(lobPipeline)} sub="Open opportunities" color={C.amber} icon=""/>
+                <MetricCard label="Installs" value={lobInstalled} sub={`${lobPending} pending`} color={C.cyan} icon=""/>
+              </div>
+
+              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16 }}>
+                {/* Accounts Table */}
+                <Card topColor={lobStyle.dot}>
+                  <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:14 }}>
+                    <Label>Accounts</Label>
+                    <span style={{ ...mono, fontSize:10, color:C.textMuted }}>{lobAccounts.length} total</span>
+                  </div>
+                  {lobAccounts.length === 0 ? (
+                    <div style={{ textAlign:"center", padding:"24px 0", color:C.textMuted, fontSize:12 }}>
+                      No accounts yet — click + Add Account
+                    </div>
+                  ) : lobAccounts.map(a => (
+                    <div key={a.id} onClick={() => { setSel(a); setView("accounts"); }}
+                      style={{ display:"flex", alignItems:"center", justifyContent:"space-between",
+                        padding:"8px 0", borderBottom:`1px solid ${C.border}`, cursor:"pointer" }}>
+                      <div>
+                        <div style={{ fontWeight:600, fontSize:12, color:C.cyan }}>{a.name}</div>
+                        <div style={{ fontSize:11, color:C.textMuted }}>{a.contact} · {a.city}</div>
+                      </div>
+                      <div style={{ ...mono, fontSize:11, color:C.green }}>
+                        ${new Intl.NumberFormat("en-US").format(a.revenue||0)}
+                      </div>
+                    </div>
+                  ))}
+                </Card>
+
+                {/* Orders */}
+                <Card topColor={lobStyle.dot}>
+                  <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:14 }}>
+                    <Label>Orders</Label>
+                    <span style={{ ...mono, fontSize:10, color:C.textMuted }}>{lobOrders.length} total</span>
+                  </div>
+                  {lobOrders.length === 0 ? (
+                    <div style={{ textAlign:"center", padding:"24px 0", color:C.textMuted, fontSize:12 }}>
+                      No orders yet
+                    </div>
+                  ) : lobOrders.slice(0,8).map((o,i) => (
+                    <div key={i} style={{ display:"flex", alignItems:"center", justifyContent:"space-between",
+                      padding:"8px 0", borderBottom:`1px solid ${C.border}` }}>
+                      <div>
+                        <div style={{ fontWeight:600, fontSize:12 }}>{o.accountName}</div>
+                        <div style={{ fontSize:11, color:C.textMuted }}>{o.installDate||"No date set"}</div>
+                      </div>
+                      <span style={{ ...mono, fontSize:10, padding:"2px 8px", borderRadius:10,
+                        background: ORDER_STATUS_COLOR[o.status]+"22", color: ORDER_STATUS_COLOR[o.status] }}>
+                        {o.status}
+                      </span>
+                    </div>
+                  ))}
+                </Card>
+
+                {/* Pipeline */}
+                <Card topColor={lobStyle.dot} style={{ gridColumn:"1 / -1" }}>
+                  <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:14 }}>
+                    <Label>Pipeline</Label>
+                    <span style={{ ...mono, fontSize:10, color:C.textMuted }}>{lobContracts.filter(c=>c.stage!=="Active").length} open</span>
+                  </div>
+                  {lobContracts.length === 0 ? (
+                    <div style={{ textAlign:"center", padding:"24px 0", color:C.textMuted, fontSize:12 }}>
+                      No contracts yet
+                    </div>
+                  ) : (
+                    <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:8 }}>
+                      {["Qualify","Propose","Negotiate","Active"].map(stage => {
+                        const stageCons = lobContracts.filter(c=>c.stage===stage||c.stage===stage.replace("Negotiate","Negotiation"));
+                        return (
+                          <div key={stage} style={{ background:C.bg, borderRadius:6, padding:12 }}>
+                            <div style={{ ...mono, fontSize:10, color:STAGE_COLOR[stage]||C.textMuted,
+                              fontWeight:700, marginBottom:8, letterSpacing:1 }}>{stage.toUpperCase()}</div>
+                            {stageCons.length === 0 ? (
+                              <div style={{ fontSize:11, color:C.textMuted }}>Empty</div>
+                            ) : stageCons.map((c,i) => (
+                              <div key={i} style={{ background:C.card, border:`1px solid ${C.border}`,
+                                borderRadius:4, padding:"8px 10px", marginBottom:6, fontSize:12 }}>
+                                <div style={{ fontWeight:600, marginBottom:2 }}>{c.accountName}</div>
+                                <div style={{ ...mono, fontSize:11, color:C.green }}>
+                                  ${new Intl.NumberFormat("en-US").format(c.value||0)}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </Card>
+              </div>
+            </div>
+          );
+        })()}
       </div>
 
       {/* ── MODALS ── */}

@@ -28,13 +28,7 @@ const ORDER_STATUS_COLOR = {
 const mono = { fontFamily:"'JetBrains Mono','Fira Code','Courier New',monospace" };
 
 // ── Seed Data ─────────────────────────────────────────────────────────────────
-const AGENTS_SEED = [
-  { id:"a1", name:"Jordan Davis",   sales:18, revenue:142000, installs:15 },
-  { id:"a2", name:"Priya Nair",     sales:24, revenue:198000, installs:22 },
-  { id:"a3", name:"Marcus Bell",    sales:11, revenue:87000,  installs:10 },
-  { id:"a4", name:"Dana Reyes",     sales:19, revenue:155000, installs:17 },
-  { id:"a5", name:"Luis Garza",     sales:8,  revenue:64000,  installs:7  },
-];
+const AGENTS_SEED = [];
 // Sample data removed - loads from SharePoint
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -1028,3 +1022,4 @@ export default function RaimakCRM() {
     </div>
   );
 }
+

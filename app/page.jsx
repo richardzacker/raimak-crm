@@ -234,24 +234,50 @@ export default function RaimakCRM() {
   ];
 
   // Handlers
-  const handleAddAccount = () => {
-    const a = { ...newAccount, id: Date.now(), employees: parseInt(newAccount.employees)||0, contracts:[], orders:[], timeline:[] };
-    setAccounts(prev => [...prev, a]);
+  const handleAddAccount = async () => {
+    try {
+      const { createAccount } = await import("@/lib/graph");
+      const result = await createAccount(newAccount, instance, msalAccounts[0]);
+      const a = { ...newAccount, id: result?.id||String(Date.now()), employees:parseInt(newAccount.employees)||0, contracts:[], orders:[], timeline:[] };
+      setAccounts(prev => [...prev, a]);
+    } catch(err) {
+      console.warn("SharePoint save failed:", err.message);
+      const a = { ...newAccount, id:String(Date.now()), employees:parseInt(newAccount.employees)||0, contracts:[], orders:[], timeline:[] };
+      setAccounts(prev => [...prev, a]);
+    }
     setNewAccount({ name:"", contact:"", email:"", phone:"", city:"", revenue:"", employees:"", lob:["Frontier"] });
     setShowAddAccount(false);
   };
-  const handleAddContract = () => {
-    const c = { ...newContract, id:`C-${Date.now()}` };
-    setAccounts(prev => prev.map(a => a.id===sel.id ? { ...a, contracts:[...a.contracts, c] } : a));
-    setSel(prev => ({ ...prev, contracts:[...prev.contracts, c] }));
+  const handleAddContract = async () => {
+    try {
+      const { createContract } = await import("@/lib/graph");
+      const result = await createContract({ ...newContract, accountId: sel.id }, instance, msalAccounts[0]);
+      const c = { ...newContract, id: result?.id||`C-${Date.now()}`, accountId: sel.id };
+      setAccounts(prev => prev.map(a => a.id===sel.id ? { ...a, contracts:[...a.contracts, c] } : a));
+      setSel(prev => ({ ...prev, contracts:[...prev.contracts, c] }));
+    } catch(err) {
+      console.warn("SharePoint save failed:", err.message);
+      const c = { ...newContract, id:`C-${Date.now()}` };
+      setAccounts(prev => prev.map(a => a.id===sel.id ? { ...a, contracts:[...a.contracts, c] } : a));
+      setSel(prev => ({ ...prev, contracts:[...prev.contracts, c] }));
+    }
     setNewContract({ name:"", value:"", stage:"Qualify", close:"", lob:"Frontier" });
     setShowAddContract(false);
   };
-  const handleAddOrder = () => {
-    const o = { ...newOrder, id:`O-${Date.now()}` };
-    setAccounts(prev => prev.map(a => a.id===sel.id ? { ...a, orders:[...(a.orders||[]), o] } : a));
-    setSel(prev => ({ ...prev, orders:[...(prev.orders||[]), o] }));
-    setNewOrder({ product:"", status:"Pending", installDate:"", agent:"Jordan Davis", value:"" });
+  const handleAddOrder = async () => {
+    try {
+      const { createOrder } = await import("@/lib/graph");
+      const result = await createOrder({ ...newOrder, accountId: sel.id }, instance, msalAccounts[0]);
+      const o = { ...newOrder, id: result?.id||`O-${Date.now()}`, accountId: sel.id };
+      setAccounts(prev => prev.map(a => a.id===sel.id ? { ...a, orders:[...(a.orders||[]), o] } : a));
+      setSel(prev => ({ ...prev, orders:[...(prev.orders||[]), o] }));
+    } catch(err) {
+      console.warn("SharePoint save failed:", err.message);
+      const o = { ...newOrder, id:`O-${Date.now()}` };
+      setAccounts(prev => prev.map(a => a.id===sel.id ? { ...a, orders:[...(a.orders||[]), o] } : a));
+      setSel(prev => ({ ...prev, orders:[...(prev.orders||[]), o] }));
+    }
+    setNewOrder({ product:"", status:"Pending", installDate:"", agent:"", value:"" });
     setShowAddOrder(false);
   };
 
@@ -1022,4 +1048,6 @@ export default function RaimakCRM() {
     </div>
   );
 }
+
+
 

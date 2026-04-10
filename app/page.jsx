@@ -128,7 +128,8 @@ export default function RaimakCRM() {
   const userInitials = userName.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
   const [accounts, setAccounts] = useState([]);
   const [loading, setLoading]   = useState(false);
-  const [spError, setSpError]   = useState(null);
+  const [spError,   setSpError]   = useState(null);
+  const [saveError, setSaveError] = useState(null);
 
   // ── Load real data from SharePoint ──────────────────────────────────────
   const loadFromSharePoint = useCallback(async () => {
@@ -241,6 +242,7 @@ export default function RaimakCRM() {
       const a = { ...newAccount, id: result?.id||String(Date.now()), employees:parseInt(newAccount.employees)||0, contracts:[], orders:[], timeline:[] };
       setAccounts(prev => [...prev, a]);
     } catch(err) {
+      setSaveError(err.message);
       console.warn("SharePoint save failed:", err.message);
       const a = { ...newAccount, id:String(Date.now()), employees:parseInt(newAccount.employees)||0, contracts:[], orders:[], timeline:[] };
       setAccounts(prev => [...prev, a]);
@@ -294,6 +296,11 @@ export default function RaimakCRM() {
       {loading && (
         <div style={{ position:"fixed", top:0, left:0, right:0, zIndex:9999, background:C.cyan, color:"#fff", textAlign:"center", padding:"6px 0", fontSize:11, fontFamily:"monospace", letterSpacing:1 }}>
           // LOADING FROM SHAREPOINT...
+        </div>
+      )}
+      {saveError && (
+        <div style={{ position:"fixed", top:28, left:0, right:0, zIndex:9999, background:"#DC2626", color:"#fff", textAlign:"center", padding:"8px 0", fontSize:11, fontFamily:"monospace", cursor:"pointer" }} onClick={()=>setSaveError(null)}>
+          Save failed: {saveError} · Click to dismiss
         </div>
       )}
       {spError && process.env.NODE_ENV === "development" && (
@@ -1048,6 +1055,7 @@ export default function RaimakCRM() {
     </div>
   );
 }
+
 
 
 

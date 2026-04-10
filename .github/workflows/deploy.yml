@@ -1,4 +1,4 @@
-name: Deploy to GitHub Pages
+﻿name: Deploy to GitHub Pages
 
 on:
   push:
@@ -12,21 +12,24 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 20
-
       - name: Install dependencies
         run: npm install
-
       - name: Build static export
         run: npm run build
         env:
           NEXT_PUBLIC_AZURE_CLIENT_ID: ${{ secrets.NEXT_PUBLIC_AZURE_CLIENT_ID }}
           NEXT_PUBLIC_AZURE_TENANT_ID: ${{ secrets.NEXT_PUBLIC_AZURE_TENANT_ID }}
-
+          NEXT_PUBLIC_SP_SITE_ID: ${{ secrets.NEXT_PUBLIC_SP_SITE_ID }}
+          NEXT_PUBLIC_SP_LIST_ACCOUNTS: ${{ secrets.NEXT_PUBLIC_SP_LIST_ACCOUNTS }}
+          NEXT_PUBLIC_SP_LIST_CONTRACTS: ${{ secrets.NEXT_PUBLIC_SP_LIST_CONTRACTS }}
+          NEXT_PUBLIC_SP_LIST_ORDERS: ${{ secrets.NEXT_PUBLIC_SP_LIST_ORDERS }}
+          NEXT_PUBLIC_SP_LIST_AGENTS: ${{ secrets.NEXT_PUBLIC_SP_LIST_AGENTS }}
+          NEXT_PUBLIC_SP_LIST_LEADS: ${{ secrets.NEXT_PUBLIC_SP_LIST_LEADS }}
+          NEXT_PUBLIC_SP_LIST_ACTIVITY: ${{ secrets.NEXT_PUBLIC_SP_LIST_ACTIVITY }}
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
